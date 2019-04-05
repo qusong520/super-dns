@@ -28,7 +28,8 @@ func main() {
 		ctx, _ := context.WithTimeout(context.TODO(), tout)
 		ips, err := r.LookupHost(ctx, os.Args[1])
 		if err != nil {
-			fmt.Printf("\nError: %v", err)
+			fmt.Printf("\nError: %v\n", err)
+			fmt.Println(time.Now().Format(time.RFC850))
 		} else {
 			fmt.Print(".")
 			if len(os.Args) > 4 && os.Args[4] == "debug" {
