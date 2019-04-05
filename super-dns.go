@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"net"
 	"os"
@@ -10,32 +11,28 @@ import (
 
 func main() {
 	var r net.Resolver
-	if len(os.Args) < 4 {
-		fmt.Printf("Execution error:\n%v <hostname> <interval> <tout> [debug]", os.Args[0])
-		os.Exit(1)
-	}
-	dur, err := time.ParseDuration(os.Args[2])
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	tout, err := time.ParseDuration(os.Args[3])
-	if err != nil {
-		fmt.Println(err)
+	tout := flag.Duration("t", time.Second, "Timeout duration")
+	interval := flag.Duration("i", time.Second, "Interval duration")
+	hostname := flag.String("h", "", "Hostname")
+	debug := flag.Bool("d", false, "Debug mode")
+	flag.Parse()
+	if *hostname == "" {
+		flag.PrintDefaults()
 		os.Exit(1)
 	}
 	for {
-		ctx, _ := context.WithTimeout(context.TODO(), tout)
-		ips, err := r.LookupHost(ctx, os.Args[1])
+		ctx, _ := context.WithTimeout(context.TODO(), *tout)
+		ips, err := r.LookupHost(ctx, *hostname)
 		if err != nil {
 			fmt.Printf("\nError: %v\n", err)
 			fmt.Println(time.Now().Format(time.RFC850))
 		} else {
-			fmt.Print(".")
-			if len(os.Args) > 4 && os.Args[4] == "debug" {
+			if *debug {
 				fmt.Println(ips)
+			} else {
+				fmt.Print(".")
 			}
 		}
-		time.Sleep(dur)
+		time.Sleep(*interval)
 	}
 }
